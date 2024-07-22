@@ -1,12 +1,13 @@
 package pe.edu.unfv.emplos.models;
 
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.*;
+import org.junit.jupiter.api.condition.*;
 import pe.edu.unfv.emplos.exceptions.DineroInsuficienteException;
 
 import java.math.BigDecimal;
+import java.time.Duration;
+import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -23,6 +24,16 @@ class CuentaTest {
     @AfterEach
     void tearDwon(){
         System.out.println("Fin del metodo");
+    }
+
+    @BeforeAll
+    static void beforeAll() {
+        System.out.println("Inicialiando el test");
+    }
+
+    @AfterAll
+    static void afterAll() {
+        System.out.println("Finalizando el test");
     }
 
     @Test
@@ -126,5 +137,72 @@ class CuentaTest {
                             .anyMatch(c -> c.getPersona().equals("Sebastian")));
                 }
         );
+    }
+
+    @Test
+    @EnabledOnOs(OS.WINDOWS)
+    void testSoloWindows(){}
+
+    @Test
+    @EnabledOnOs({OS.LINUX, OS.MAC})
+    void testSoloLinuxMac(){}
+
+    @Test
+    @DisabledOnOs({OS.WINDOWS})
+    void testNoWindows(){}
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_8)
+    void soloJdk8(){}
+
+    @Test
+    @EnabledOnJre(JRE.JAVA_15)
+    void soloJdk15(){}
+
+    @Test
+    @DisabledOnJre(JRE.JAVA_15)
+    void testNoJdk15(){}
+
+    @Test
+    void imprimirSystemProperties(){
+        Properties properties = System.getProperties();
+        properties.forEach((key, value) -> {
+            System.out.println(key + "=" + value);
+        });
+    }
+
+    @Test
+    @EnabledIfSystemProperty(named = "java.version", matches = ".*50.*")
+    void testJavaVersion(){}
+
+    @Test
+    @DisabledIfSystemProperty(named = "os.arch", matches = ".*60.*")
+    void testSolo64(){}
+
+    @Test
+    @EnabledIfSystemProperty(named = "os.arch", matches = ".*32.*")
+    void testNo64(){}
+
+    @Nested
+    @Tag("timeOut")
+    class EjemploTimeOutTest{
+        @Test
+        @Timeout(1)
+        void testTimeout() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(200);
+        }
+
+        @Test
+        @Timeout(value = 1000, unit = TimeUnit.MILLISECONDS)
+        void testTimeout2() throws InterruptedException {
+            TimeUnit.MILLISECONDS.sleep(1500);
+        }
+
+        @Test
+        void testTimeOutAssertions(){
+           assertTimeout(Duration.ofSeconds(5), ()->{
+               TimeUnit.MILLISECONDS.sleep(8000);
+           });
+        }
     }
 }
